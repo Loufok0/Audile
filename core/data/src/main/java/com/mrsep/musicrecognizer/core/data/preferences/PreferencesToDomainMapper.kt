@@ -164,6 +164,7 @@ internal fun UserPreferencesProto.toDomain() = UserPreferences(
         null
     },
     autoBackupConsecutiveFailures = autoBackupConsecutiveFailures,
+    serverPostEndpoint = serverPostEndpoint,
 )
 
 internal fun AudioCaptureModeProto.toDomain() = when (this) {

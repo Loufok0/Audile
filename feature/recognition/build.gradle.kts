@@ -18,6 +18,7 @@ android {
 
 dependencies {
     implementation(projects.core.domain)
+    implementation(projects.core.network)
     implementation(projects.core.audio)
     implementation(projects.core.metadata)
 

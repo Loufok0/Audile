@@ -142,7 +142,9 @@ message UserPreferencesProto {
 
   SnappedWindowPositionProto floating_button_position = 55;
 
-  // NEXT AVAILABLE ID: 56
+  string server_post_endpoint = 56;
+
+  // NEXT AVAILABLE ID: 57
 
 }
 

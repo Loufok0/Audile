@@ -18,6 +18,8 @@ android {
 
 dependencies {
     implementation(projects.core.common)
+    implementation(projects.core.domain)
+
 
     api(libs.kotlinx.serializationJson)
     api(libs.coil.network.ktor)

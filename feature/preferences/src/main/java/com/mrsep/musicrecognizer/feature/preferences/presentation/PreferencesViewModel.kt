@@ -150,6 +150,12 @@ internal class PreferencesViewModel @Inject constructor(
             preferencesRepository.setRecognizeOnStartup(value)
         }
     }
+
+    fun setServerPostEndpoint(value: String) {
+        viewModelScope.launch {
+            preferencesRepository.setServerPostEndpoint(value)
+        }
+    }
 }
 
 @Immutable

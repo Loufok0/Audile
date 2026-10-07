@@ -200,6 +200,10 @@ internal class PreferencesRepositoryImpl @Inject constructor(
         }
     }
 
+    override suspend fun setServerPostEndpoint(value: String) {
+        safeWriter { serverPostEndpoint = value }
+    }
+
     private fun Flow<UserPreferencesProto>.ioExceptionCatcherOnRead(): Flow<UserPreferencesProto> {
         return this.catch { e ->
             Log.e(TAG, "Failed to read user preferences", e)

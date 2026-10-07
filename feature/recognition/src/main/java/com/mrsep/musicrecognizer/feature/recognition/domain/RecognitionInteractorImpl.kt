@@ -18,6 +18,8 @@ import com.mrsep.musicrecognizer.core.domain.recognition.model.RecognitionTask
 import com.mrsep.musicrecognizer.core.domain.recognition.model.RemoteRecognitionResult
 import com.mrsep.musicrecognizer.core.domain.recognition.toAudioSample
 import com.mrsep.musicrecognizer.core.domain.track.TrackRepository
+import com.mrsep.musicrecognizer.core.network.CustomServerService
+import com.mrsep.musicrecognizer.core.domain.track.model.Track
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
@@ -40,6 +42,7 @@ import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.time.Duration.Companion.seconds
+import android.util.Log
 
 @Singleton
 internal class RecognitionInteractorImpl @Inject constructor(
@@ -50,6 +53,8 @@ internal class RecognitionInteractorImpl @Inject constructor(
     private val enqueuedRecognitionScheduler: EnqueuedRecognitionScheduler,
     private val trackMetadataFetchManager: TrackMetadataFetchManager,
     private val networkMonitor: NetworkMonitor,
+    private val customServerService: CustomServerService,
+
 ) : RecognitionInteractor {
 
     private val _status = MutableStateFlow<RecognitionStatus>(RecognitionStatus.Ready)
@@ -57,6 +62,17 @@ internal class RecognitionInteractorImpl @Inject constructor(
 
     private var recognitionJob: Job? = null
     private val isRecognitionJobCompleted get() = recognitionJob?.isCompleted ?: true
+
+
+    private suspend fun sendToCustomServerIfEnabled(track: Track) {
+        val endpoint = preferencesRepository.userPreferencesFlow.first().serverPostEndpoint
+        if (endpoint.isEmpty()) return
+        customServerService.sendTrackData(track, endpoint)
+            .onFailure { e -> Log.e(TAG, "Failed to send track to custom server: ${e.message}") }
+    }
+
+
+
 
     context(scope: CoroutineScope)
     override fun launchRecognition(recordingController: AudioRecordingController, usePrerecordingBuffer: Boolean) {
@@ -162,6 +178,7 @@ internal class RecognitionInteractorImpl @Inject constructor(
                         if (updatedTrack.lyrics == null) {
                             trackMetadataFetchManager.enqueueLyricsFetcher(updatedTrack.id)
                         }
+                        scope.launch { sendToCustomServerIfEnabled(updatedTrack) }
                         RecognitionStatus.Done(RecognitionResult.Success(updatedTrack))
                     }
 
@@ -276,3 +293,5 @@ internal class RecognitionInteractorImpl @Inject constructor(
         }
     }
 }
+
+private const val TAG = "RecognitionInteractorImpl"

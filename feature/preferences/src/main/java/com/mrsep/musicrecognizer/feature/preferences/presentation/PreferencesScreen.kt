@@ -286,6 +286,58 @@ internal fun PreferencesScreen(
                     HorizontalDivider(modifier = Modifier.alpha(0.2f))
                     Spacer(Modifier.height(16.dp))
                     PreferenceGroup(title = stringResource(StringsR.string.pref_group_misc)) {
+
+
+
+                    var showServerConfigDialog by rememberSaveable { mutableStateOf(false) }
+                    PreferenceSwitchItem(
+                        title = "Send data to server",
+                        subtitle = "Send data of each music recognized to custom to server",
+                        checked = uiState.preferences.serverPostEndpoint.isNotEmpty(),
+                        onClick = {
+                            if (uiState.preferences.serverPostEndpoint.isEmpty()) {
+                                showServerConfigDialog = true
+                            }
+                            else {
+                                viewModel.setServerPostEndpoint ("")
+                            }
+                        }
+                    )
+
+                    if (showServerConfigDialog) {
+                        CustomServerUrlDialog(
+                            currentUrl = uiState.preferences.serverPostEndpoint,
+                            onSave = { newUrl ->
+                                viewModel.setServerPostEndpoint(newUrl)
+                                showServerConfigDialog = false
+                            },
+                            onDismiss = { showServerConfigDialog = false }
+                        )
+                    }
+
+                        var showServerUrlDialog by rememberSaveable { mutableStateOf(false) }
+                        PreferenceClickableItem(
+                            title = "Personal Server",
+                            subtitle = if (uiState.preferences.serverPostEndpoint.isNotEmpty()) {
+                                uiState.preferences.serverPostEndpoint
+                            }
+                            else {
+                                "Not set"
+                            },
+                            onItemClick = { showServerUrlDialog = true }
+                        )
+                        if (showServerUrlDialog) {
+                            CustomServerUrlDialog(
+                                currentUrl = uiState.preferences.serverPostEndpoint,
+                                onSave = {
+                                    newUrl ->
+                                        viewModel.setServerPostEndpoint(newUrl)
+                                        showServerUrlDialog = false
+                                },
+                                onDismiss = { showServerUrlDialog = false }
+                            )
+                        }
+
                         val vibratorAvailable = remember {
                             context.getDefaultVibrator().hasVibrator()
                         }
